@@ -18,9 +18,18 @@ func TestPrivateKeysDifferEachOther(t *testing.T) {
 	for i := 0; i < NumberOfKeys; i++ {
 		privateKeys[i] = GeneratePrivateKeyBytesBigEndian()
 		for j := 0; j < i; j++ {
-			assert.NotEqual(t, privateKeys[i], privateKeys[j])
+			assert.True(t, notEqualBytes(privateKeys[i], privateKeys[j]))
 		}
 	}
+}
+
+func notEqualBytes(expected []byte, actual []byte) bool {
+	for idx, expectedByte := range expected {
+		if expectedByte != actual[idx] {
+			return true
+		}
+	}
+	return false
 }
 
 func TestPrivateKeysAreLessThanCurveOrderMinus1(t *testing.T) {

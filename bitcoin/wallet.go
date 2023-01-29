@@ -18,8 +18,15 @@ func getEllipticCurveOrder() *big.Int {
 }
 
 func GeneratePrivateKeyBytesBigEndian() []byte {
-	baseString := getRandomStringOfLength(25)
-	return generatePrivateKeyFromString(baseString)
+	for {
+		baseString := getRandomStringOfLength(25)
+		privateKeyBytes := getSha256(baseString)
+		privateKeyBigInt := toBigIntFromBigEndian(privateKeyBytes)
+
+		if isInRange(privateKeyBigInt) {
+			return privateKeyBytes
+		}
+	}
 }
 
 func getRandomStringOfLength(length int) string {
@@ -43,17 +50,6 @@ func getRandomCharacter(characters string) byte {
 		panic(err)
 	}
 	return characters[randomIndex.Int64()]
-}
-
-func generatePrivateKeyFromString(baseString string) []byte {
-	for {
-		privateKeyBytes := getSha256(baseString)
-		privateKeyBigInt := toBigIntFromBigEndian(privateKeyBytes)
-
-		if isInRange(privateKeyBigInt) {
-			return privateKeyBytes
-		}
-	}
 }
 
 func getSha256(baseString string) []byte {
