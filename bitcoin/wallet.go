@@ -3,8 +3,7 @@ package bitcoin
 import (
 	"crypto/rand"
 	"crypto/sha256"
-
-	//"github.com/ethereum/go-ethereum/crypto/secp256k1"
+	"github.com/tyler-smith/go-bip39"
 	"math/big"
 )
 
@@ -74,4 +73,13 @@ func isLessThanCurveOrderMinusOne(privateKeyBigInt *big.Int) bool {
 
 func isGreaterThan1(privateKeyBigInt *big.Int) bool {
 	return privateKeyBigInt.Cmp(big.NewInt(1)) > 0
+}
+
+func GenerateMnemonicPhrase() string {
+	entropy := getRandomBytes(32)
+	mnemonic, err := bip39.NewMnemonic(entropy)
+	if err != nil {
+		panic(err)
+	}
+	return mnemonic
 }

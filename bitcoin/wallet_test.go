@@ -3,6 +3,7 @@ package bitcoin
 import (
 	"github.com/stretchr/testify/assert"
 	"math/big"
+	"strings"
 	"testing"
 )
 
@@ -63,4 +64,26 @@ func TestToBigInt(t *testing.T) {
 
 func assertBytesIsBigEndianOfNumber(t *testing.T, bytes []byte, x uint64) {
 	assert.Equal(t, int64(x), toBigIntFromBigEndian(bytes).Int64())
+}
+
+func TestMnemonicPhraseHas24Words(t *testing.T) {
+	mnemonicPhrase := GenerateMnemonicPhrase()
+	words := strings.Split(mnemonicPhrase, " ")
+	assert.Len(t, words, 24)
+}
+
+func TestMnemonicPhraseIsDifferentEachTime(t *testing.T) {
+	const NUMBER_OF_PHRASES = 30
+	mnemonics := make([]string, NUMBER_OF_PHRASES)
+
+	for i := 0; i < NUMBER_OF_PHRASES; i++ {
+		mnemonics[i] = GenerateMnemonicPhrase()
+		assertIsNotEqualToAllBefore(t, i, mnemonics)
+	}
+}
+
+func assertIsNotEqualToAllBefore(t *testing.T, index int, mnemonics []string) {
+	for j := 0; j < index; j++ {
+		assert.NotEqual(t, mnemonics[index], mnemonics[j])
+	}
 }
