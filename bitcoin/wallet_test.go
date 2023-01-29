@@ -1,59 +1,57 @@
 package bitcoin
 
 import (
-	"fmt"
 	"github.com/stretchr/testify/assert"
 	"math/big"
 	"testing"
 )
 
 func TestPrivateKeyHas256Bits(t *testing.T) {
-	privateKeyBytes := generatePrivateKeyBytes()
+	privateKeyBytes := GeneratePrivateKeyBytesBigEndian()
 	assert.Len(t, privateKeyBytes, 32)
 }
 
-func TestPrivateKeysDiffer(t *testing.T) {
-	privateKeys := [30][]byte{}
-	for i := 0; i < 30; i++ {
-		privateKeys[i] = generatePrivateKeyBytes()
+func TestPrivateKeysDifferEachOther(t *testing.T) {
+	const NumberOfKeys = 30
+	privateKeys := [NumberOfKeys][]byte{}
+
+	for i := 0; i < NumberOfKeys; i++ {
+		privateKeys[i] = GeneratePrivateKeyBytesBigEndian()
 		for j := 0; j < i; j++ {
 			assert.NotEqual(t, privateKeys[i], privateKeys[j])
 		}
 	}
 }
 
-func TestPrivateKeysAreLessThanCurveOrder(t *testing.T) {
+func TestPrivateKeysAreLessThanCurveOrderMinus1(t *testing.T) {
 	for i := 0; i < 30; i++ {
-		privateKey := toBigIntFromBigEndian(generatePrivateKeyBytes())
-		assert.True(t, privateKey.Cmp(ellipticCurveOrder) < 0)
+		privateKey := toBigIntFromBigEndian(GeneratePrivateKeyBytesBigEndian())
+		assert.True(t, privateKey.Cmp(curveOrderMinusOne) < 0)
 	}
 }
 
-func TestPrivateKeysAreGreaterThanZero(t *testing.T) {
+func TestPrivateKeysAreGreaterThan1(t *testing.T) {
 	for i := 0; i < 30; i++ {
-		privateKey := toBigIntFromBigEndian(generatePrivateKeyBytes())
-		assert.True(t, privateKey.Cmp(big.NewInt(0)) > 0)
+		privateKey := toBigIntFromBigEndian(GeneratePrivateKeyBytesBigEndian())
+		assert.True(t, privateKey.Cmp(big.NewInt(1)) > 0)
 	}
 }
 
 func TestToBigInt(t *testing.T) {
-	numbers := []uint64{25, 78, 133434, 1600000, 4, 0, 1}
-	inBinary := [][]byte{[]byte{25}, []byte{78}, []byte{2, 9, 58}, []byte{24, 106, 0}, []byte{4}, []byte{0}, []byte{1}}
-	for i, x := range numbers {
-		xInBytes := inBinary[i]
-		fmt.Println(xInBytes)
-		assert.Equal(t, int64(x), toBigIntFromBigEndian(xInBytes).Int64())
+	numbersToBigEndianBytes := map[uint64][]byte{
+		25:      {25},
+		78:      {78},
+		133434:  {2, 9, 58},
+		1600000: {24, 106, 0},
+		4:       {4},
+		0:       {0},
+		1:       {1},
+	}
+	for x, xInBytes := range numbersToBigEndianBytes {
+		assertBytesIsBigEndianOfNumber(t, xInBytes, x)
 	}
 }
 
-func TestFirst32Bytes(t *testing.T) {
-	bs1 := make([]byte, 32)
-	bs1[0] = 1
-	bs1[1] = 2
-	bs1[2] = 3
-	expectedBs1 := [32]byte{}
-	expectedBs1[0] = 1
-	expectedBs1[1] = 2
-	expectedBs1[2] = 3
-	assert.Equal(t, expectedBs1, first32Bytes(bs1))
+func assertBytesIsBigEndianOfNumber(t *testing.T, bytes []byte, x uint64) {
+	assert.Equal(t, int64(x), toBigIntFromBigEndian(bytes).Int64())
 }

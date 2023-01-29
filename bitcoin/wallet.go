@@ -3,59 +3,79 @@ package bitcoin
 import (
 	"crypto/rand"
 	"crypto/sha256"
+
 	//"github.com/ethereum/go-ethereum/crypto/secp256k1"
 	"math/big"
 )
 
 var ellipticCurveOrder = getEllipticCurveOrder()
+var curveOrderMinusOne = new(big.Int).Sub(ellipticCurveOrder, big.NewInt(1))
 
-func generateRandomString(n int) (string, error) {
-	const letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-"
-	ret := make([]byte, n)
-	for i := 0; i < n; i++ {
-		num, err := rand.Int(rand.Reader, big.NewInt(int64(len(letters))))
-		if err != nil {
-			return "", err
-		}
-		ret[i] = letters[num.Int64()]
-	}
-
-	return string(ret), nil
+func getEllipticCurveOrder() *big.Int {
+	_1158 := big.NewInt(1158)
+	_10Exp77 := new(big.Int).Exp(big.NewInt(10), big.NewInt(77), nil)
+	return new(big.Int).Mul(_1158, _10Exp77)
 }
 
-func generatePrivateKeyBytes() []byte { // @TODO include "BigEndian" in the name
-	seed, err := generateRandomString(25)
+func GeneratePrivateKeyBytesBigEndian() []byte {
+	baseString := getRandomStringOfLength(25)
+	return generatePrivateKeyFromString(baseString)
+}
+
+func getRandomStringOfLength(length int) string {
+	randomBytes := getRandomBytes(length)
+	return string(randomBytes)
+}
+
+func getRandomBytes(amount int) []byte {
+	const characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-"
+	randomBytes := make([]byte, amount)
+
+	for i := 0; i < amount; i++ {
+		randomBytes[i] = getRandomCharacter(characters)
+	}
+	return randomBytes
+}
+
+func getRandomCharacter(characters string) byte {
+	randomIndex, err := rand.Int(rand.Reader, big.NewInt(int64(len(characters))))
 	if err != nil {
 		panic(err)
 	}
-	ellipticCurveOrder := getEllipticCurveOrder()
+	return characters[randomIndex.Int64()]
+}
+
+func generatePrivateKeyFromString(baseString string) []byte {
 	for {
-		h := sha256.New()
-		h.Write([]byte(seed))
-		privateKeyBytes := h.Sum(nil)
+		privateKeyBytes := getSha256(baseString)
 		privateKeyBigInt := toBigIntFromBigEndian(privateKeyBytes)
 
-		if privateKeyBigInt.Cmp(big.NewInt(0)) > 0 && privateKeyBigInt.Cmp(ellipticCurveOrder) < 0 {
+		if isInRange(privateKeyBigInt) {
 			return privateKeyBytes
 		}
 	}
 }
 
-func first32Bytes(bytes []byte) [32]byte {
-	ans := [32]byte{}
-	for i := 0; i < 32; i++ {
-		ans[i] = bytes[i]
-	}
-	return ans
-}
-
-func getEllipticCurveOrder() *big.Int {
-	ans := big.NewInt(1158)
-	tenPow77 := new(big.Int)
-	tenPow77.Exp(big.NewInt(10), big.NewInt(77), nil)
-	return ans.Mul(ans, tenPow77)
+func getSha256(baseString string) []byte {
+	h := sha256.New()
+	h.Write([]byte(baseString))
+	privateKeyBytes := h.Sum(nil)
+	return privateKeyBytes
 }
 
 func toBigIntFromBigEndian(bytes []byte) *big.Int {
 	return new(big.Int).SetBytes(bytes)
+}
+
+func isInRange(privateKeyBigInt *big.Int) bool {
+	return isLessThanCurveOrderMinusOne(privateKeyBigInt) &&
+		isGreaterThan1(privateKeyBigInt)
+}
+
+func isLessThanCurveOrderMinusOne(privateKeyBigInt *big.Int) bool {
+	return privateKeyBigInt.Cmp(curveOrderMinusOne) < 0
+}
+
+func isGreaterThan1(privateKeyBigInt *big.Int) bool {
+	return privateKeyBigInt.Cmp(big.NewInt(1)) > 0
 }
