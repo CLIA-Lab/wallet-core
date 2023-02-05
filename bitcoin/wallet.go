@@ -64,15 +64,15 @@ func toBigIntFromBigEndian(bytes []byte) *big.Int {
 
 func isInRange(privateKeyBigInt *big.Int) bool {
 	return isLessThanCurveOrderMinusOne(privateKeyBigInt) &&
-		isGreaterThan1(privateKeyBigInt)
+		isGreaterThan0(privateKeyBigInt)
 }
 
 func isLessThanCurveOrderMinusOne(privateKeyBigInt *big.Int) bool {
 	return privateKeyBigInt.Cmp(curveOrderMinusOne) < 0
 }
 
-func isGreaterThan1(privateKeyBigInt *big.Int) bool {
-	return privateKeyBigInt.Cmp(big.NewInt(1)) > 0
+func isGreaterThan0(privateKeyBigInt *big.Int) bool {
+	return privateKeyBigInt.Cmp(big.NewInt(0)) > 0
 }
 
 func GenerateMnemonicPhrase() string {

@@ -1,6 +1,7 @@
 package bitcoin
 
 import (
+	"github.com/CLIA-Lab/wallet-core/utils"
 	"github.com/stretchr/testify/assert"
 	"math/big"
 	"strings"
@@ -19,18 +20,9 @@ func TestPrivateKeysDifferEachOther(t *testing.T) {
 	for i := 0; i < NumberOfKeys; i++ {
 		privateKeys[i] = GeneratePrivateKeyBytesBigEndian()
 		for j := 0; j < i; j++ {
-			assert.True(t, notEqualBytes(privateKeys[i], privateKeys[j]))
+			assert.True(t, utils.NotEqualBytes(privateKeys[i], privateKeys[j]))
 		}
 	}
-}
-
-func notEqualBytes(expected []byte, actual []byte) bool {
-	for idx, expectedByte := range expected {
-		if expectedByte != actual[idx] {
-			return true
-		}
-	}
-	return false
 }
 
 func TestPrivateKeysAreLessThanCurveOrderMinus1(t *testing.T) {
@@ -40,10 +32,10 @@ func TestPrivateKeysAreLessThanCurveOrderMinus1(t *testing.T) {
 	}
 }
 
-func TestPrivateKeysAreGreaterThan1(t *testing.T) {
+func TestPrivateKeysAreGreaterThan0(t *testing.T) {
 	for i := 0; i < 30; i++ {
 		privateKey := toBigIntFromBigEndian(GeneratePrivateKeyBytesBigEndian())
-		assert.True(t, privateKey.Cmp(big.NewInt(1)) > 0)
+		assert.True(t, privateKey.Cmp(big.NewInt(0)) > 0)
 	}
 }
 
