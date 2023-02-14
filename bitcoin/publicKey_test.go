@@ -13,8 +13,8 @@ type keysCase struct {
 }
 
 func TestGetPublicKeyOfBigEndian(t *testing.T) {
-	for testCase := range getTestCases() {
-		actualX, actualY := GetPublicKeyOfBigEndian(testCase.privateKey)
+	for testCase := range getPublicKeyTestCases() {
+		actualX, actualY := getPublicKeyPointOfBigEndian(testCase.privateKey)
 		expectedX := testCase.publicKeyX
 		expectedY := testCase.publicKeyY
 
@@ -23,7 +23,7 @@ func TestGetPublicKeyOfBigEndian(t *testing.T) {
 	}
 }
 
-func getTestCases() <-chan *keysCase {
+func getPublicKeyTestCases() <-chan *keysCase {
 	channel := make(chan *keysCase)
 	go func() {
 		publicKeyOf := map[string][2]string{
@@ -62,9 +62,9 @@ func getTestCases() <-chan *keysCase {
 }
 
 func TestPublicKeyCoordinatesHave32BytesEach(t *testing.T) {
-	firstTestCase := <-getTestCases()
+	firstTestCase := <-getPublicKeyTestCases()
 	privateKey := firstTestCase.privateKey
-	x, y := GetPublicKeyOfBigEndian(privateKey)
+	x, y := getPublicKeyPointOfBigEndian(privateKey)
 
 	assert.Len(t, x, 32)
 	assert.Len(t, y, 32)

@@ -1,6 +1,20 @@
 package bitcoin
 
-import "math/big"
+import (
+	"bytes"
+	"github.com/CLIA-Lab/wallet-core/utils"
+	"math/big"
+)
+
+type PublicKey struct {
+	X [32]byte
+	Y [32]byte
+}
+
+func GetPublicKey(privateKey *PrivateKey) *PublicKey {
+	x, y := getPublicKeyPointOfBigEndian(privateKey.Bytes)
+	return &PublicKey{X: x, Y: y}
+}
 
 var secp256k1 EllipticCurve
 
@@ -14,10 +28,36 @@ func init() {
 	secp256k1.H, _ = new(big.Int).SetString("01", 16)
 }
 
-func GetPublicKeyOfBigEndian(privateKeyBigEndian [32]byte) (x [32]byte, y [32]byte) {
+func getPublicKeyPointOfBigEndian(privateKeyBigEndian [32]byte) (x [32]byte, y [32]byte) {
 	k := new(big.Int).SetBytes(privateKeyBigEndian[:])
 	Q := secp256k1.ScalarBaseMult(k)
 	Q.X.FillBytes(x[:])
 	Q.Y.FillBytes(y[:])
 	return
+}
+
+func (pubKey *PublicKey) ToUncompressed() [65]byte {
+	x := pubKey.X[:]
+	y := pubKey.Y[:]
+
+	/* Pad X and Y coordinate bytes to 32-bytes */
+	padded_x := append(bytes.Repeat([]byte{0x00}, 32-len(x)), x...)
+	padded_y := append(bytes.Repeat([]byte{0x00}, 32-len(y)), y...)
+
+	/* Add prefix 0x04 for uncompressed coordinates */
+	return utils.First65Bytes(append([]byte{0x04}, append(padded_x, padded_y...)...))
+}
+
+func (pubKey *PublicKey) ToCompressed() [33]byte {
+	x := pubKey.X[:]
+
+	padded_x := append(bytes.Repeat([]byte{0x00}, 32-len(x)), x...)
+
+	var compressedBytes []byte
+	if utils.IsEven(pubKey.Y) {
+		compressedBytes = append([]byte{0x02}, padded_x...)
+	} else {
+		compressedBytes = append([]byte{0x03}, padded_x...)
+	}
+	return utils.First33Bytes(compressedBytes)
 }
