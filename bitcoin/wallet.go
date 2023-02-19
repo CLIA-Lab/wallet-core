@@ -16,7 +16,7 @@ func getEllipticCurveOrder() *big.Int {
 	return new(big.Int).Mul(_1158, _10Exp77)
 }
 
-func GeneratePrivateKeyBytesBigEndian() []byte {
+func generatePrivateKeyBytesBigEndian() []byte {
 	for {
 		baseString := getRandomStringOfLength(25)
 		privateKeyBytes := getSha256(baseString)
@@ -83,3 +83,5 @@ func GenerateMnemonicPhrase() string {
 	}
 	return mnemonic
 }
+
+// @TODO refactor: move contents to privateKey.go

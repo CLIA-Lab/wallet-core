@@ -1,6 +1,7 @@
 package bitcoin
 
 import (
+	"fmt"
 	"github.com/CLIA-Lab/wallet-core/utils"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -10,6 +11,17 @@ type addressCase struct {
 	privateKey                     *PrivateKey
 	compressedBase58CheckEncoded   string
 	uncompressedBase58CheckEncoded string
+}
+
+func ExampleGetAddress() {
+	privateKey := NewPrivateKeyFromHex("905e986484cd97da5fc593d061e3610684147f7f1133d509b8334e13b052ded9")
+	address := GetAddress(GetPublicKey(privateKey))
+	compressedHex, uncompressedHex := address.ToHex()
+	fmt.Println("compressed:", compressedHex)
+	fmt.Println("uncompressed:", uncompressedHex)
+	// Output:
+	// compressed: ac4f7adb3fbd6bdc140bc32b412aa0e1de48f467
+	// uncompressed: 8786fbdf5e88853046aba38fbbc8cf8d314f894e
 }
 
 func TestUncompressedBase58CheckEncode(t *testing.T) {

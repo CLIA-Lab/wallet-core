@@ -1,6 +1,8 @@
 package bitcoin
 
 import (
+	"encoding/hex"
+	"fmt"
 	"github.com/CLIA-Lab/wallet-core/utils"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -10,6 +12,35 @@ type keysCase struct {
 	privateKey [32]byte
 	publicKeyX [32]byte
 	publicKeyY [32]byte
+}
+
+func ExampleGetPublicKey() {
+	privateKey := NewPrivateKeyFromHex("905e986484cd97da5fc593d061e3610684147f7f1133d509b8334e13b052ded9")
+	publicKey := GetPublicKey(privateKey)
+	xHex := hex.EncodeToString(publicKey.X[:])
+	yHex := hex.EncodeToString(publicKey.Y[:])
+
+	fmt.Println("x =", xHex)
+	fmt.Println("y =", yHex)
+	// Output:
+	// x = ca167032d15483f557426b662dd06c54511ea7616ed9e4020647d49644962e86
+	// y = 7a1be4b4be273838766153a2bce2d7eb746be27591fd38cd145a7fe72ad3f425
+}
+
+func ExamplePublicKey_ToUncompressedHex() {
+	privateKey := NewPrivateKeyFromHex("905e986484cd97da5fc593d061e3610684147f7f1133d509b8334e13b052ded9")
+	publicKey := GetPublicKey(privateKey)
+	fmt.Println(publicKey.ToUncompressedHex())
+	// Output:
+	// 04ca167032d15483f557426b662dd06c54511ea7616ed9e4020647d49644962e867a1be4b4be273838766153a2bce2d7eb746be27591fd38cd145a7fe72ad3f425
+}
+
+func ExamplePublicKey_ToCompressedHex() {
+	privateKey := NewPrivateKeyFromHex("905e986484cd97da5fc593d061e3610684147f7f1133d509b8334e13b052ded9")
+	publicKey := GetPublicKey(privateKey)
+	fmt.Println(publicKey.ToCompressedHex())
+	// Output:
+	// 03ca167032d15483f557426b662dd06c54511ea7616ed9e4020647d49644962e86
 }
 
 func TestGetPublicKeyOfBigEndian(t *testing.T) {

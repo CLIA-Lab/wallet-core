@@ -1,6 +1,7 @@
 package bitcoin
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -8,6 +9,32 @@ import (
 type privateKeyCase struct {
 	privateKey  *PrivateKey
 	expectedWif string
+}
+
+func ExampleNewPrivateKey() {
+	privateKey := NewPrivateKey()
+	fmt.Println(len(privateKey.Bytes))
+	// Output:
+	// 32
+}
+
+func ExamplePrivateKey_ToHex() {
+	privateKey := NewPrivateKeyFromHex("905e986484cd97da5fc593d061e3610684147f7f1133d509b8334e13b052ded9")
+	fmt.Println(privateKey.ToHex())
+	// Output:
+	// 905e986484cd97da5fc593d061e3610684147f7f1133d509b8334e13b052ded9
+}
+
+func ExamplePrivateKey_ToWif() {
+	privateKey := NewPrivateKeyFromHex("905e986484cd97da5fc593d061e3610684147f7f1133d509b8334e13b052ded9")
+	fmt.Println(privateKey.ToWif())
+	// Output:
+	// 5JusJkqHvemE1KWEoCZP7tp2DdZgUXVoDdkPvPk1VqCNEi586pi
+}
+
+func TestHas256Bits(t *testing.T) {
+	privateKey := NewPrivateKey()
+	assert.Len(t, privateKey.Bytes, 32)
 }
 
 func TestToWif(t *testing.T) {

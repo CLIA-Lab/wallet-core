@@ -8,17 +8,12 @@ import (
 	"testing"
 )
 
-func TestPrivateKeyHas256Bits(t *testing.T) {
-	privateKeyBytes := GeneratePrivateKeyBytesBigEndian()
-	assert.Len(t, privateKeyBytes, 32)
-}
-
 func TestPrivateKeysDifferEachOther(t *testing.T) {
 	const NumberOfKeys = 30
 	privateKeys := [NumberOfKeys][]byte{}
 
 	for i := 0; i < NumberOfKeys; i++ {
-		privateKeys[i] = GeneratePrivateKeyBytesBigEndian()
+		privateKeys[i] = generatePrivateKeyBytesBigEndian()
 		for j := 0; j < i; j++ {
 			assert.True(t, utils.NotEqualBytes(privateKeys[i], privateKeys[j]))
 		}
@@ -27,14 +22,14 @@ func TestPrivateKeysDifferEachOther(t *testing.T) {
 
 func TestPrivateKeysAreLessThanCurveOrderMinus1(t *testing.T) {
 	for i := 0; i < 30; i++ {
-		privateKey := toBigIntFromBigEndian(GeneratePrivateKeyBytesBigEndian())
+		privateKey := toBigIntFromBigEndian(generatePrivateKeyBytesBigEndian())
 		assert.True(t, privateKey.Cmp(curveOrderMinusOne) < 0)
 	}
 }
 
 func TestPrivateKeysAreGreaterThan0(t *testing.T) {
 	for i := 0; i < 30; i++ {
-		privateKey := toBigIntFromBigEndian(GeneratePrivateKeyBytesBigEndian())
+		privateKey := toBigIntFromBigEndian(generatePrivateKeyBytesBigEndian())
 		assert.True(t, privateKey.Cmp(big.NewInt(0)) > 0)
 	}
 }
