@@ -1,6 +1,7 @@
 package bitcoin
 
 import (
+	"encoding/hex"
 	"github.com/CLIA-Lab/wallet-core/utils"
 )
 
@@ -33,4 +34,11 @@ func (address *Address) ToBase58CheckEncode() (compressed, uncompressed string) 
 func base58CheckEncodeAddressBytes(bytes []byte) string {
 	addressPrefix := []byte{0x00}
 	return utils.Base58CheckEncode(append(addressPrefix, bytes...))
+}
+
+func (address *Address) ToHex() (compressed, uncompressed string) {
+	compressedBytes := address.CompressedBytes[:]
+	uncompressedBytes := address.UncompressedBytes[:]
+	return hex.EncodeToString(compressedBytes),
+		hex.EncodeToString(uncompressedBytes)
 }

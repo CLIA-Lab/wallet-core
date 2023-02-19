@@ -2,6 +2,7 @@ package bitcoin
 
 import (
 	"bytes"
+	"encoding/hex"
 	"github.com/CLIA-Lab/wallet-core/utils"
 	"math/big"
 )
@@ -36,6 +37,11 @@ func getPublicKeyPointOfBigEndian(privateKeyBigEndian [32]byte) (x [32]byte, y [
 	return
 }
 
+func (pubKey *PublicKey) ToUncompressedHex() string {
+	uncompressed := pubKey.ToUncompressed()
+	return hex.EncodeToString(uncompressed[:])
+}
+
 func (pubKey *PublicKey) ToUncompressed() [65]byte {
 	x := pubKey.X[:]
 	y := pubKey.Y[:]
@@ -46,6 +52,11 @@ func (pubKey *PublicKey) ToUncompressed() [65]byte {
 
 	/* Add prefix 0x04 for uncompressed coordinates */
 	return utils.First65Bytes(append([]byte{0x04}, append(padded_x, padded_y...)...))
+}
+
+func (pubKey *PublicKey) ToCompressedHex() string {
+	compressed := pubKey.ToCompressed()
+	return hex.EncodeToString(compressed[:])
 }
 
 func (pubKey *PublicKey) ToCompressed() [33]byte {
