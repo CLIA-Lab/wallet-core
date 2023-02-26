@@ -23,6 +23,10 @@ func NewPrivateKeyFromHex(hex string) *PrivateKey {
 	return &PrivateKey{Bytes: bytes32}
 }
 
+func NewPrivateKeyFromBip38Encrypted(bip38, passphrase string) *PrivateKey {
+	return decryptBip38(bip38, passphrase)
+}
+
 func (privateKey *PrivateKey) ToWif() string {
 	wifPrefix := []byte{0x80}
 	return utils.Base58CheckEncode(append(wifPrefix, privateKey.Bytes[:]...))
@@ -30,4 +34,8 @@ func (privateKey *PrivateKey) ToWif() string {
 
 func (privateKey *PrivateKey) ToHex() string {
 	return hex.EncodeToString(privateKey.Bytes[:])
+}
+
+func (privateKey *PrivateKey) ToBip38Encrypted(passphrase string) string {
+	return encryptBip38(privateKey, passphrase)
 }

@@ -4,8 +4,10 @@ import (
 	bytes2 "bytes"
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"golang.org/x/crypto/ripemd160"
 	"math/big"
+	"strings"
 )
 
 func NotEqualBytes(expected []byte, actual []byte) bool {
@@ -84,7 +86,7 @@ func ApplySha256(bytes []byte) []byte {
 func Base58CheckEncode(bytes []byte) string {
 	hashedTwice := ApplySha256(ApplySha256(bytes))
 
-	checkSum := hashedTwice[0:4]
+	checkSum := hashedTwice[:4]
 	bytesWithCheckSum := append(bytes, checkSum...)
 
 	base58String := base58Encode(bytesWithCheckSum)
@@ -124,6 +126,50 @@ func prependOneForEachLeadingZero(target string, bytes []byte) string {
 		target = "1" + target
 	}
 	return target
+}
+
+func Base58CheckDecode(s string) []byte {
+	bytesWithCheckSum := base58Decode(s)
+	/* Add leading zero bytes */
+	for i := 0; i < len(s); i++ {
+		if s[i] != '1' {
+			break
+		}
+		bytesWithCheckSum = append([]byte{0x00}, bytesWithCheckSum...)
+	}
+	if len(bytesWithCheckSum) < 5 {
+		panic("Invalid base-58 check string: missing checksum.")
+	}
+	bytesWithoutCheckSum := bytesWithCheckSum[:len(bytesWithCheckSum)-4]
+	expectedCheckSum := ApplySha256(ApplySha256(bytesWithoutCheckSum))[:4]
+	actualCheckSum := bytesWithCheckSum[len(bytesWithCheckSum)-4:]
+
+	if bytes2.Compare(expectedCheckSum, actualCheckSum) != 0 {
+		panic("Invalid base-58 check string: invalid checksum.")
+	}
+	return bytesWithoutCheckSum
+}
+
+func base58Decode(s string) []byte {
+	const BITCOIN_BASE58_TABLE = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
+
+	/* Initialize */
+	x := big.NewInt(0)
+	m := big.NewInt(58)
+
+	/* Convert string to big int */
+	for i := 0; i < len(s); i++ {
+		b58index := strings.IndexByte(BITCOIN_BASE58_TABLE, s[i])
+		if b58index == -1 {
+			panic(fmt.Sprintf("Invalid base-58 character encountered: '%c', index %d.", s[i], i))
+		}
+		b58value := big.NewInt(int64(b58index))
+		x.Mul(x, m)
+		x.Add(x, b58value)
+	}
+
+	/* Convert big int to big endian bytes */
+	return x.Bytes()
 }
 
 func ApplyRipemd160(bytes []byte) []byte {

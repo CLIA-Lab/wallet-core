@@ -67,3 +67,40 @@ func getPrivateKeyTestCases() <-chan *privateKeyCase {
 	}()
 	return channel
 }
+
+func TestToBip38Encrypted(t *testing.T) {
+	privateKey := NewPrivateKeyFromHex("1E99423A4ED27608A15A2616A2B0E9E52CED330AC530EDCC32C8FFC6A526AEDD")
+	passphrase := "MyTestPassphrase"
+	assert.Equal(
+		t,
+		"6PRTHL6mWa48xSopbU1cKrVjpKbBZxcLRRCdctLJ3z5yxE87MobKoXdTsJ",
+		privateKey.ToBip38Encrypted(passphrase),
+	)
+	privateKey = NewPrivateKeyFromHex("0bc297b6eb9528d5d5f4e098fe3338ea39add0ac047df29be807ce0128de8bbc")
+	assert.Equal(
+		t,
+		"6PRQ9wmDAgtv6eyNncUMtSDo21iDwYQszejiGDDCWaG6317rxaLuzoENJd",
+		privateKey.ToBip38Encrypted(passphrase),
+	)
+}
+
+func TestFromBip38Encrypted(t *testing.T) {
+	privateKey := NewPrivateKeyFromBip38Encrypted(
+		"6PRTHL6mWa48xSopbU1cKrVjpKbBZxcLRRCdctLJ3z5yxE87MobKoXdTsJ",
+		"MyTestPassphrase",
+	)
+	assert.Equal(
+		t,
+		"1e99423a4ed27608a15a2616a2b0e9e52ced330ac530edcc32c8ffc6a526aedd",
+		privateKey.ToHex(),
+	)
+	privateKey = NewPrivateKeyFromBip38Encrypted(
+		"6PRQ9wmDAgtv6eyNncUMtSDo21iDwYQszejiGDDCWaG6317rxaLuzoENJd",
+		"MyTestPassphrase",
+	)
+	assert.Equal(
+		t,
+		"0bc297b6eb9528d5d5f4e098fe3338ea39add0ac047df29be807ce0128de8bbc",
+		privateKey.ToHex(),
+	)
+}
